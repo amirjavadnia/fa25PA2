@@ -106,9 +106,17 @@ int buildEncodingTree(int nextFree) {
             cerr << "Error.\n";
             exit(1);
         }
-
+ charArr[curFree] = '\0'; 
+        weightArr[curFree] = weightArr[a] + weightArr[b];
  leftArr[curFree] = a;
         rightArr[curFree] = b;
+
+     heap.push(curFree);
+        curFree++;
+    }
+
+    return heap.pop();
+}
 // Step 4: Use an STL stack to generate codes
 void generateCodes(int root, string codes[]) {
     for (int i = 0; i < 26; ++i) codes[i].clear();
@@ -122,6 +130,14 @@ void generateCodes(int root, string codes[]) {
         return;
     }
 
+ struct Item {
+        int node;
+        string path;
+    };
+
+    stack<Item> st;
+    st.push({root, ""});
+
     while (!st.empty()) {
         Item cur = st.top(); st.pop();
         int u = cur.node;
@@ -131,6 +147,14 @@ void generateCodes(int root, string codes[]) {
      if (L == -1 && R == -1) {
             char c = charArr[u];
             if (c >= 'a' && c <= 'z') {
+     codes[c - 'a'] = cur.path.empty() ? "0" : cur.path;
+            }
+            continue;
+        }
+    if (R != -1) st.push({R, cur.path + "1"});
+        if (L != -1) st.push({L, cur.path + "0"});
+    }
+}
 
 // Step 5: Print table and encoded message
 void encodeMessage(const string& filename, string codes[]) {
@@ -143,6 +167,10 @@ void encodeMessage(const string& filename, string codes[]) {
     cout << "\nEncoded message:\n";
 
     ifstream file(filename);
+     if (!file.is_open()) {
+        cerr << "could not open " << filename << " for encoding\n";
+        return;
+    }
     char ch;
     while (file.get(ch)) {
         if (ch >= 'A' && ch <= 'Z')
